@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from './user/entity/user.entity';
 
 @Module({
   imports: [
@@ -39,6 +41,16 @@ import { ConfigModule } from '@nestjs/config';
           strict: true,
         },
       },
+    }),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+      entities: [UserEntity],
+      synchronize: process.env.DB_DATABASE == 'pruduction' ? false : true,
     }),
   ],
   controllers: [AppController],
