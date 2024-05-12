@@ -46,6 +46,7 @@ export class AuthController {
 
   @Post('forget')
   async forget(@Body() { email }: AuthForgetDTO) {
+    console.log('email: ', email);
     return await this.authService.forget(email);
   }
 
