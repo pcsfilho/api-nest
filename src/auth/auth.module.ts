@@ -9,8 +9,8 @@ import { UserEntity } from 'src/user/entity/user.entity';
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.SECRET_JWT || 'secret',
-      signOptions: { expiresIn: process.env.EXPIRE_JWT },
+      secret: String(process.env.SECRET_JWT) || 'secret',
+      signOptions: { expiresIn: String(process.env.EXPIRE_JWT) || '24h' },
     }),
     forwardRef(() => UserModule),
     FileModule,

@@ -4,19 +4,23 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { users } from '@prisma/client';
 import { AuthRegisterDTO } from 'src/user/dto/auth.register.dto';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
+import { UserEntity } from 'src/user/entity/user.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly JWTService: JwtService,
     private readonly userService: UserService,
     private readonly mailer: MailerService,
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
   ) {}
-  createToken(user: users) {
+  createToken(user: UserEntity) {
     try {
       const payload = { sub: user.id, email: user.email };
       const accessToken = this.JWTService.sign(payload);
@@ -39,11 +43,12 @@ export class AuthService {
     }
   }
   async login(email: string, password: string) {
-    const user = await this.prisma.users.findFirst({
+    const user = await this.usersRepository.findOne({
       where: {
         email,
       },
     });
+
     if (!user) throw new UnauthorizedException('Email e/ou senha incorretos');
 
     const compare = await bcrypt.compare(password, user.password);
@@ -53,10 +58,8 @@ export class AuthService {
     return this.createToken(user);
   }
   async forget(email: string) {
-    const user = await this.prisma.users.findFirst({
-      where: {
-        email,
-      },
+    const user = await this.usersRepository.findOneBy({
+      email,
     });
     if (!user) throw new UnauthorizedException('Email incorreto');
 
@@ -81,14 +84,10 @@ export class AuthService {
       if (isNaN(Number(id))) throw new BadRequestException('ID inválido');
       const salt = await bcrypt.genSalt();
       password = await bcrypt.hash(password, salt);
-      const user = await this.prisma.users.update({
-        where: {
-          id,
-        },
-        data: {
-          password,
-        },
+      await this.usersRepository.update(Number(id), {
+        password,
       });
+      const user = await this.userService.show(Number(id));
       return this.createToken(user);
     } catch (error) {
       throw new BadRequestException(error);
