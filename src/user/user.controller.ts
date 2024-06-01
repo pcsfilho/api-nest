@@ -21,7 +21,6 @@ import { Role } from 'src/enums/role.enum';
 import { LogInterceptor } from 'src/interceptors/log.interceptor';
 import { RoleGuard } from 'src/guards/role.guard';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @UseGuards(AuthGuard, RoleGuard)
 @UseInterceptors(LogInterceptor)

@@ -9,7 +9,7 @@ export class LogInterceptor implements NestInterceptor {
   ): Observable<any> | Promise<Observable<any>> {
     const dt = Date.now();
     return next.handle().pipe(
-      tap((event) => {
+      tap(() => {
         // console.log('event: ', event);
         const request = context.switchToHttp().getRequest();
         console.log(
